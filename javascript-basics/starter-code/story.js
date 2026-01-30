@@ -42,9 +42,17 @@
 
 // -"node story.js" to play (node FileName)
 
-//const name = "bob"
-//const age = 17
-//const home = "3231 MLK Ave"
-//console.log("there once was a man named " + name + " who lived on " + home + " he was " + age + " years old")
+
+///const name = "bob"
+///const age = 17
+///const home = "3231 MLK Ave"
+///console.log("there once was a man named " + name + " who lived on " + home + " he was " + age + " years old")
+
+
+///let apple = 5
+///let banana = 12
+///console.log ("i have " + apple + " apples ")
+///let fruit = apple + banana
+///banana = banana - 5
 
 
