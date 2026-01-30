@@ -39,3 +39,12 @@
 // - Create longer, more complex stories
 // - Use boolean variables to track achievements
 // - Try using let to change variable values as your story progresses
+
+// -"node story.js" to play (node FileName)
+
+//const name = "bob"
+//const age = 17
+//const home = "3231 MLK Ave"
+//console.log("there once was a man named " + name + " who lived on " + home + " he was " + age + " years old")
+
+
