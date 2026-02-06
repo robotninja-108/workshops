@@ -23,8 +23,8 @@ Learn the basics of how computers work, understand hardware vs software, explore
 
 ### [JavaScript Basics]({{ site.baseurl }}/javascript-basics/)
 
-**Date:** January 22, 2026
-**Duration:** 2 hours
+**Date:** January 22, 2026  
+**Duration:** 2 hours  
 **Theme:** *"Making computers respond to YOU - your first real programs"*
 
 Learn JavaScript fundamentals: variables, data types, console.log, and string concatenation. Build a dynamic story using Node.js.
@@ -33,11 +33,16 @@ Learn JavaScript fundamentals: variables, data types, console.log, and string co
 
 ---
 
-### Interactive HTML + JavaScript
+### [Interactive HTML + JavaScript]({{ site.baseurl }}/interactive-html-javascript/)
 
 **Date:** February 5, 2026  
 **Duration:** 2 hours  
-*Coming soon*
+**Theme:** *"Making the browser respond to you with forms and JavaScript"*
+
+Build a live message box using text inputs, dropdowns, and JavaScript-driven
+updates to the page.
+
+[View Workshop ->]({{ site.baseurl }}/interactive-html-javascript/)
 
 ---
 
