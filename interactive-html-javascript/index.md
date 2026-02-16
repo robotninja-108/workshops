@@ -9,6 +9,7 @@ workshop: Interactive HTML + JavaScript
 **Audience:** Beginners with basic HTML familiarity \
 **Theme:** _"Making the browser respond to you with forms and JavaScript"_
 
+* [Recording](https://youtu.be/1DFExD01zDY)
 * [Slides]({{ site.baseurl }}/interactive-html-javascript/slides.html)
 * Resources:
   * [Glossary]({{ site.baseurl }}/interactive-html-javascript/resources/glossary)

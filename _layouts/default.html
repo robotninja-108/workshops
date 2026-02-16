@@ -29,10 +29,13 @@
 
     <main class="main-content">
       {% if page.workshop %}
+      {% assign url_parts = page.url | split: '/' %}
+      {% assign workshop_slug = url_parts[1] %}
+      {% assign workshop_url = '/' | append: workshop_slug | append: '/' | relative_url %}
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="{{ '/' | relative_url }}">Workshops Home</a>
         <span class="separator">›</span>
-        <a href="{{ '/tech-fundamentals/' | relative_url }}">{{ page.workshop }}</a>
+        <a href="{{ workshop_url }}">{{ page.workshop }}</a>
         {% if page.section %}
         <span class="separator">›</span>
         <span>{{ page.section }}</span>
@@ -46,7 +49,7 @@
 
       {% if page.workshop %}
       <footer class="page-footer">
-        <a href="{{ '/tech-fundamentals/' | relative_url }}" class="back-link">← Back to {{ page.workshop }}</a>
+        <a href="{{ workshop_url }}" class="back-link">← Back to {{ page.workshop }}</a>
       </footer>
       {% endif %}
     </main>

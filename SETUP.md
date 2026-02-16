@@ -387,9 +387,10 @@ In VS Code integrated terminal (View → Terminal):
 
 ```bash
 # Test Node.js
-node test.js
+node $(find . -name "hello.js" -print -quit)
+python $(find . -name "hello.py" -print -quit)
 
-# Test other tools
+# Show versions of installed tools
 node --version
 python3 --version
 git --version
@@ -465,3 +466,108 @@ Complete this checklist 1-2 days before the workshop:
 - [ ] Can create and run a test JavaScript file
 
 **All checked?** You're ready for the workshop!
+
+## Section 11: (Optional) Install Godot Engine for Game Development Workshops
+
+For our workshops, students can just use the [online version of Godot](https://editor.godotengine.org/releases/latest/), but if you want to use Godot more extensively or work on projects outside of workshops, installing the desktop version can be helpful, in particular for file/asset management.
+
+**What is Godot?** Godot is a free and open-source game engine used for creating 2D and 3D games.
+
+**Downloads:** [https://godotengine.org/download](https://godotengine.org/download)
+
+For Windows, Mac, and Linux, follow the instructions on the download page.
+
+### Chromebook Installation Steps
+
+1. Open the Terminal app and start penguin (the Linux environment)
+1. Check what processor your Chromebook has by running:
+
+   ```bash
+   lscpu | grep Architecture | awk '{print $2}'
+   ```
+
+   The result will be one of the following:
+   - `x86_64` (choose `x86_64` below)
+   - `i686` or `i386` (choose `x86_32` below)
+   - `aarch64` (choose `arm64` below)
+   - `armv7l` (choose `arm32` below)
+1. Visit the Godot download page at <https://godotengine.org/download/linux/>
+1. Scroll down to the "All downloads" section and click the link for your architecture:
+   - [Linux - x86_64](https://downloads.godotengine.org/?version=4.6&flavor=stable&slug=linux.x86_64.zip&platform=linux.64)
+   - [Linux - x86_32](https://downloads.godotengine.org/?version=4.6&flavor=stable&slug=linux.x86_32.zip&platform=linux.32)
+   - [Linux - arm64](https://downloads.godotengine.org/?version=4.6&flavor=stable&slug=linux.arm64.zip&platform=linux.arm64)
+   - [Linux - arm32](https://downloads.godotengine.org/?version=4.6&flavor=stable&slug=linux.arm32.zip&platform=linux.arm32)
+1. Once you have the zip file downloaded, move it to your Linux home directory (you can find it in the "Files" app under "Linux files")
+1. Open the terminal and navigate to your home directory
+
+   ```bash
+   cd ~
+   ```
+1. Unzip the downloaded file
+
+   ```bash
+   unzip linux.x86_64.zip  # replace with the name of your downloaded file
+   ```
+1. Rename the extracted file to "godot"
+
+   ```bash
+   mv godot-4.6-stable-linux.x86_64 godot  # replace with the actual extracted folder name
+   ```
+1. Make the "godot" file executable
+
+   ```bash
+   chmod +x godot
+   ```
+1. Move the "godot" file to `/usr/local/bin` to make it accessible from anywhere
+
+   ```bash
+   sudo mv godot /usr/local/bin/
+   ```
+1. Now you can run Godot from the terminal by typing:
+
+   ```bash
+   godot
+   ```
+
+Here's a script that combines all the terminal commands, including downloading the file, for installing Godot on a Chromebook with a `x86_64` architecture (you can copy and then paste it into the terminal by pressing Ctrl+Shift+V):
+
+```bash
+wget 'https://downloads.godotengine.org/?version=4.6&flavor=stable&slug=linux.x86_64.zip&platform=linux.64' -O godot.zip
+unzip godot.zip
+mv Godot_v4.6-stable_linux.x86_64 godot
+chmod +x godot
+sudo mv godot /usr/local/bin/
+rm godot.zip
+```
+
+### Create a Desktop Shortcut (Chromebook Linux or Linux Mint Cinnamon)
+
+After Godot is installed, run:
+
+```bash
+chmod +x scripts/create-godot-shortcut.sh
+./scripts/create-godot-shortcut.sh
+```
+
+Or run it without cloning this repo:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Lansing-Tech-Studio/workshops/main/scripts/create-godot-shortcut.sh)"
+```
+
+Without cloning, if you need to pass a specific Godot executable path:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Lansing-Tech-Studio/workshops/main/scripts/create-godot-shortcut.sh)" -- /path/to/godot
+```
+
+If your executable is not in your `PATH`, pass it directly:
+
+```bash
+./scripts/create-godot-shortcut.sh /path/to/godot
+```
+
+The script downloads the official Godot icon and creates launcher files in:
+
+- `~/.local/share/applications/godot.desktop`
+- `~/Desktop/Godot.desktop` (if your desktop folder exists)

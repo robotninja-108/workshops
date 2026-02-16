@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>Game Engine Tools</title>
+
+	<link rel="stylesheet" href="../assets/revealjs/reset.css">
+	<link rel="stylesheet" href="../assets/revealjs/reveal.css">
+	<link rel="stylesheet" href="../assets/revealjs/theme/black.css">
+
+	<link rel="stylesheet" href="../assets/revealjs/plugin/highlight/monokai.css">
+	<style>
+		.outlined {
+			text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black, -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 2px 0 black !important;
+		}
+
+		div.slide-background-content {
+			background-size: 900px 900px;
+			background-repeat: no-repeat;
+			background-position: center center;
+			opacity: 0.05;
+			background-image: url("../assets/images/logo-transparent.png");
+		}
+	</style>
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section data-background-image="../assets/images/logo-transparent.png" data-background-size="900px 900px"
+				data-background-opacity="0.7" data-background-repeat="no-repeat"
+				data-background-position="center center">
+				<h2 class="outlined">Game Engine Tools</h2>
+				<p class="outlined">With Godot 4.6</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p class="outlined">by Brendon Thiede</p>
+			</section>
+
+			<section>
+				<h2>Student Goals</h2>
+				<ul>
+					<li>Understand nodes + scenes</li>
+					<li>Run a 2D platformer project in Godot</li>
+					<li>Add animation, score, and a win message</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Icebreaker</h2>
+				<p>What is a game mechanic you love?</p>
+				<p><small>(jumping, gems, power-ups, dash, double-jump, etc.)</small></p>
+			</section>
+
+			<section>
+				<section>
+					<h2>What is a Game Engine?</h2>
+					<ul>
+						<li>It helps you build games faster</li>
+						<li>It handles rendering, input, and physics</li>
+						<li>You still choose the rules (your code)</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Today's Project</h2>
+					<p>A tiny 2D platformer</p>
+					<ul>
+						<li>You can move + jump</li>
+						<li>Gems disappear when touched</li>
+						<li>No score yet</li>
+						<li>Character looks idle all the time (for now)</li>
+					</ul>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>Godot Mental Model</h2>
+					<ul>
+						<li>A <strong>scene</strong> is a saved bundle of nodes</li>
+						<li>A <strong>node</strong> is a single game object/feature</li>
+						<li>Nodes form a <strong>tree</strong></li>
+						<li>Scripts attach to nodes to add behavior</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Common 2D Node Types</h3>
+					<ul>
+						<li>Sprite2D / AnimatedSprite2D</li>
+						<li>CharacterBody2D (player movement)</li>
+						<li>Area2D (pickups like gems)</li>
+						<li>CollisionShape2D (hitboxes)</li>
+						<li>CanvasLayer + Label (UI)</li>
+					</ul>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>Setup</h2>
+					<ul>
+						<li>Open the web editor</li>
+						<li>Import the starter project zip</li>
+						<li>Press Play</li>
+					</ul>
+					<p><small>Web editor: https://editor.godotengine.org/releases/latest/</small></p>
+				</section>
+				<section>
+					<h2>Starter Project Checklist</h2>
+					<ul>
+						<li>Player can move left/right</li>
+						<li>Player can jump</li>
+						<li>Gems disappear on touch</li>
+					</ul>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>Physics (Quick)</h2>
+					<ul>
+						<li>Gravity pulls you down</li>
+						<li>Collision shapes decide what can touch</li>
+						<li>CharacterBody2D helps with movement on the ground</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Gems</h2>
+					<ul>
+						<li>Gems are usually an Area2D</li>
+						<li>On contact: remove the gem</li>
+						<li>Today: we'll add scoring on top</li>
+					</ul>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>Mission 1</h2>
+					<p>Switch animations</p>
+					<ul>
+						<li>Idle when not moving</li>
+						<li>Move when running</li>
+						<li>Jump when in the air</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Changing Animations</h3>
+					<p>Think: velocity + "on the floor"</p>
+					<pre><code data-trim class="language-python">
+if not is_on_floor():
+  animated_sprite.play("jump")
+elif abs(velocity.x) > 1:
+  animated_sprite.play("move")
+else:
+  animated_sprite.play("idle")
+					</code></pre>
+					<p><small>Names may differ in your project. Follow the starter code.</small></p>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>Mission 2</h2>
+					<p>Flip direction</p>
+					<ul>
+						<li>Face right when moving right</li>
+						<li>Face left when moving left</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Flipping the Sprite</h3>
+					<pre><code data-trim class="language-python">
+if velocity.x > 0:
+  animated_sprite.flip_h = false
+elif velocity.x < 0:
+  animated_sprite.flip_h = true
+					</code></pre>
+          <p>What happens if velocity.x is 0?</p>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>Mission 3</h2>
+					<p>Add scoring</p>
+					<ul>
+						<li>Create a score variable</li>
+						<li>When a gem is collected: +1</li>
+						<li>Update a UI label</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Updating Score</h3>
+					<pre><code data-trim class="language-python">
+score += 1
+score_label.text = "Score: " + str(score)
+					</code></pre>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>If Time</h2>
+					<p>Winner message</p>
+					<ul>
+						<li>Track gems remaining</li>
+						<li>When zero: show "You win!"</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Debugging Tips</h2>
+					<ul>
+						<li>Read the error message (it tells you the file + line)</li>
+						<li>Print values to learn what the game is doing</li>
+						<li>Change one thing at a time</li>
+					</ul>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>Wrap-Up</h2>
+					<ul>
+						<li>Nodes build scenes</li>
+						<li>Scripts control behavior</li>
+						<li>Physics makes movement feel real</li>
+            <li>Make it your own with assets, mechanics, and story</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Next Steps</h2>
+					<p>Add enemies, sound, and new levels!</p>
+				</section>
+			</section>
+
+			<section>Questions?</section>
+			<section data-background-image="../assets/images/logo-transparent.png" data-background-size="900px 900px"
+				data-background-opacity="1" data-background-repeat="no-repeat" data-background-position="center center">
+				<h2 class="outlined"><em>Thank you!</em></h2>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+			</section>
+		</div>
+	</div>
+
+	<script src="../assets/revealjs/reveal.js"></script>
+	<script src="../assets/revealjs/plugin/notes/notes.js"></script>
+	<script src="../assets/revealjs/plugin/markdown/markdown.js"></script>
+	<script src="../assets/revealjs/plugin/highlight/highlight.js"></script>
+	<script>
+		Reveal.initialize({
+			hash: true,
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+		});
+	</script>
+</body>
+
+</html>
