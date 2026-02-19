@@ -8,5 +8,12 @@
   "editor.minimap.enabled": false,
   "terminal.integrated.fontSize": 14,
   "code-runner.runInTerminal": true,
-  "code-runner.saveFileBeforeRun": true
+  "code-runner.saveFileBeforeRun": true,
+  "python-envs.pythonProjects": [
+    {
+      "path": "python_for_kids.py",
+      "envManager": "ms-python.python:venv",
+      "packageManager": "ms-python.python:pip"
+    }
+  ]
 }
