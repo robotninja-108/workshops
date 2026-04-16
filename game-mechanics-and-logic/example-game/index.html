@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Mechanics Demo - Lansing Tech Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Mechanics Demo</h1>
+
+<div id="game-wrapper">
+  <canvas id="game" width="720" height="400"></canvas>
+  <div id="flash-message"></div>
+</div>
+
+<p id="controls-hint">Arrow Keys / WASD: Move &nbsp;|&nbsp; Space / Up / W: Jump &nbsp;|&nbsp; Z / Ctrl: Shoot</p>
+
+<div id="design-note">
+  <h3>Designer's Lens</h3>
+  <p>
+    This demo shows <strong>progressive discovery</strong>: the player starts with one ability (jump),
+    finds a powerup that grants a second (double jump), then the new ability opens a path to a third (shoot).
+    Notice how each pickup is placed right where you need to use the new ability — the game
+    <strong>teaches through placement</strong>, not through text.
+    The HUD on the left shows what mechanics are locked or unlocked at any moment.
+  </p>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>

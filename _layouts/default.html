@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,17 +9,48 @@
   {% if page.print_friendly %}
   <link rel="stylesheet" href="{{ '/assets/style/print.css' | relative_url }}">
   {% endif %}
+  <script>
+    (function () {
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (saved === 'dark' || (!saved && prefersDark)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
 </head>
+
 <body>
   <header class="site-header">
     <div class="header-content">
       <a href="{{ site.url }}" class="site-logo">
-        <img src="{{ '/assets/images/logo-transparent.png' | relative_url }}" alt="Lansing Tech Studio" class="logo-img">
+        <img src="{{ '/assets/images/logo-transparent.png' | relative_url }}" alt="Lansing Tech Studio"
+          class="logo-img">
         <span class="site-title">{{ site.parent_title }}</span>
       </a>
-      <button class="nav-toggle" aria-label="Toggle navigation">
-        <span class="hamburger"></span>
-      </button>
+      <div class="header-actions">
+        <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <button class="nav-toggle" aria-label="Toggle navigation">
+          <span class="hamburger"></span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -52,6 +84,25 @@
         <a href="{{ workshop_url }}" class="back-link">← Back to {{ page.workshop }}</a>
       </footer>
       {% endif %}
+
+      {% if page.comments %}
+      <div id="disqus_thread"></div>
+      <script>
+        var disqus_config = function () {
+          this.page.url = '{{ site.url }}{{ site.baseurl }}{{ page.url }}';
+          this.page.identifier = '{{ page.url }}';
+        };
+        (function () {
+          var d = document, s = d.createElement('script');
+          s.src = 'https://lansing-tech-studio.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by
+          Disqus.</a></noscript>
+      <script id="dsq-count-scr" src="//lansing-tech-studio.disqus.com/count.js" async></script>
+      {% endif %}
     </main>
   </div>
 
@@ -63,15 +114,27 @@
   </footer>
 
   <script>
+    // Dark mode toggle
+    document.getElementById('darkModeToggle').addEventListener('click', function () {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
     // Mobile navigation toggle
-    document.querySelector('.nav-toggle').addEventListener('click', function() {
+    document.querySelector('.nav-toggle').addEventListener('click', function () {
       document.getElementById('sidebar').classList.toggle('open');
       this.classList.toggle('active');
     });
 
     // Collapsible subnav toggle
-    document.querySelectorAll('.nav-toggle-btn').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
+    document.querySelectorAll('.nav-toggle-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
         e.preventDefault();
         const navItem = this.closest('.nav-item');
         const isExpanded = navItem.classList.toggle('expanded');
@@ -80,7 +143,7 @@
     });
 
     // Auto-expand nav items that contain the current page or are active
-    document.querySelectorAll('.nav-item.has-subnav').forEach(function(navItem) {
+    document.querySelectorAll('.nav-item.has-subnav').forEach(function (navItem) {
       const subnav = navItem.querySelector('.nav-subnav');
       const isActive = navItem.classList.contains('active') || (subnav && subnav.querySelector('.active'));
       if (isActive) {
@@ -89,6 +152,66 @@
         if (btn) btn.setAttribute('aria-expanded', 'true');
       }
     });
+
+    // Scroll the sidebar so the active nav item is visible
+    var activeLink = document.querySelector('#sidebar .active');
+    if (activeLink) {
+      activeLink.scrollIntoView({ block: 'center' });
+    }
+
+    // Workshop filter
+    (function () {
+      var filterInput = document.getElementById('navFilter');
+      var navList = document.querySelector('.nav-list');
+      if (!filterInput || !navList) return;
+
+      // Add no-results message element
+      var noResults = document.createElement('div');
+      noResults.className = 'nav-no-results';
+      noResults.textContent = 'No workshops found';
+      navList.parentNode.insertBefore(noResults, navList.nextSibling);
+
+      // Remember which items were already expanded before filtering
+      var expandedBeforeFilter = new Set();
+      navList.querySelectorAll('.nav-item.expanded').forEach(function (item) {
+        expandedBeforeFilter.add(item);
+      });
+
+      filterInput.addEventListener('input', function () {
+        var query = this.value.toLowerCase().trim();
+        var items = navList.querySelectorAll('.nav-item');
+        var visibleCount = 0;
+
+        items.forEach(function (item) {
+          if (!query) {
+            item.classList.remove('nav-filtered-out');
+            // Restore original expanded state
+            if (expandedBeforeFilter.has(item)) {
+              item.classList.add('expanded');
+              var btn = item.querySelector('.nav-toggle-btn');
+              if (btn) btn.setAttribute('aria-expanded', 'true');
+            } else {
+              item.classList.remove('expanded');
+              var btn = item.querySelector('.nav-toggle-btn');
+              if (btn) btn.setAttribute('aria-expanded', 'false');
+            }
+            visibleCount++;
+            return;
+          }
+          var title = (item.querySelector('.nav-item-header > a') || item.querySelector(':scope > a'));
+          var text = title ? title.textContent.toLowerCase() : '';
+          if (text.indexOf(query) !== -1) {
+            item.classList.remove('nav-filtered-out');
+            visibleCount++;
+          } else {
+            item.classList.add('nav-filtered-out');
+          }
+        });
+
+        noResults.style.display = (visibleCount === 0 && query) ? 'block' : 'none';
+      });
+    })();
   </script>
 </body>
+
 </html>

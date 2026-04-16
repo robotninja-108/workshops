@@ -2,6 +2,7 @@
 layout: default
 title: Game Engine Tools
 workshop: Game Engine Tools
+comments: true
 ---
 
 # Game Engine Tools - 90 Minute Workshop
@@ -9,10 +10,10 @@ workshop: Game Engine Tools
 **Audience:** Beginners (ages ~10-14) \
 **Theme:** _"Using a real game engine to build a small 2D platformer"_
 
-- [Recording ▶️](https://youtu.be/Tc3QxoVZRzw)
+- <a href="https://youtu.be/Tc3QxoVZRzw"><img src="{{ site.baseurl }}/assets/icons/youtube.svg" alt="" style="height:1em;vertical-align:middle;margin-right:4px">Recording</a>
 - [Slides]({{ site.baseurl }}/game-engine/slides.html)
 - Resources:
-  - [How to Build the Starter Project]({{ site.baseurl }}/game-engine/starter-code/build-starter-project) ([Video▶️](https://youtu.be/V02-xhsohVY))
+  - [How to Build the Starter Project]({{ site.baseurl }}/game-engine/starter-code/build-starter-project) (<a href="https://youtu.be/V02-xhsohVY"><img src="{{ site.baseurl }}/assets/icons/youtube.svg" alt="" style="height:1em;vertical-align:middle;margin-right:4px">Recording</a>)
   - [Starter Project Zip]({{ site.baseurl }}/game-engine/starter-code/platformer-starter-godot4.zip)
   - [Glossary]({{ site.baseurl }}/game-engine/resources/glossary)
   - [Next Steps After Game Engine Tools]({{ site.baseurl }}/game-engine/resources/next-steps)

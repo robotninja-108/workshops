@@ -2,6 +2,7 @@
 layout: default
 title: Digital Art & Animation
 workshop: Digital Art & Animation
+comments: true
 ---
 
 # Digital Art & Animation - 2 Hour Workshop
@@ -10,8 +11,9 @@ workshop: Digital Art & Animation
 **Audience:** Beginners (ages ~12-14) \
 **Theme:** _"Designing your own character sprites and bringing them to life in a game engine"_
 
-- [Setup Guide]({{ site.baseurl }}/character-sprite-animation/HOW_TO_SETUP)
-- [Starter Project Zip]({{ site.baseurl }}/character-sprite-animation/godot-character-boilerplate.zip)
+* <a href="https://youtu.be/IjLyNHh4YR4"><img src="{{ site.baseurl }}/assets/icons/youtube.svg" alt="" style="height:1em;vertical-align:middle;margin-right:4px">Recording</a>
+* [Setup Guide]({{ site.baseurl }}/character-sprite-animation/HOW_TO_SETUP)
+* [Starter Project Zip]({{ site.baseurl }}/character-sprite-animation/godot-character-boilerplate.zip)
 
 ## Workshop Overview
 

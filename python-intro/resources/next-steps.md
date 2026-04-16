@@ -94,10 +94,3 @@ print(f"The {adjective} {noun} decided to {verb} all day!")
 - Ask in the workshop Discord/Slack (if available)
 - Remember: every programmer was once exactly where you are now!
 
-## Looking Ahead
-
-**Next Workshop: Advanced Python Coding (4/2/2026)**
-- Loops: repeat actions automatically
-- Lists: store collections of data
-- Functions: organize code into reusable pieces
-- Build bigger, more complex programs

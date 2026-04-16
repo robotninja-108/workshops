@@ -1,0 +1,556 @@
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const flashMessageEl = document.getElementById('flash-message');
+
+// ─── Canvas size ─────────────────────────────────────────────
+const CANVAS_WIDTH = canvas.width;
+const CANVAS_HEIGHT = canvas.height;
+
+// ─── Game feel — try changing these! ─────────────────────────
+// GRAVITY: how fast the player accelerates downward each frame
+//   lower (0.2) = floaty   |   higher (0.8) = heavy and snappy
+const GRAVITY = 0.45;
+
+// JUMP_FORCE: upward push applied when jumping (negative = up)
+//   less negative (-8) = low hop   |   more negative (-14) = high leap
+//   note: double jump uses the same force — change it in update() to differ
+const JUMP_FORCE = -10.5;
+
+// TERMINAL_VELOCITY: maximum falling speed (caps the downward velocity)
+//   lower (8) = slow fall, more float time   |   higher (20) = fast plummet
+const TERMINAL_VELOCITY = 14;
+
+// SPEED: horizontal movement speed in pixels per frame
+//   lower (2) = slow crawl   |   higher (5) = quick dash
+const SPEED = 3.2;
+
+// BULLET_SPEED: how fast a bullet travels per frame
+//   lower (5) = slow projectile   |   higher (14) = instant-feeling shot
+const BULLET_SPEED = 9;
+
+// ─── Colors ──────────────────────────────────────────────────
+const COLORS = {
+  bg: '#0d1117',
+  ground: '#2a3a5a',
+  platformLow: '#2a5a3a',
+  platformMid: '#5a3a2a',
+  platformHigh: '#5a2a5a',
+  platformTarget: '#2a4a5a',
+  player: '#4488ff',
+  playerEye: '#ffffff',
+  boots: '#00ddaa',
+  wand: '#ffaa00',
+  bullet: '#ffff44',
+  target: '#cc3333',
+  targetDead: '#444',
+  hud: 'rgba(0,0,0,0.65)',
+  locked: '#ff5555',
+  unlocked: '#44ff99',
+  neutral: '#99aabb',
+};
+
+// ─── Platforms ───────────────────────────────────────────────
+// { x, y, w, h, color, label? }
+const platforms = [
+  { x: 0, y: 370, w: CANVAS_WIDTH, h: 30, color: COLORS.ground }, // ground
+  { x: 60, y: 300, w: 110, h: 12, color: COLORS.platformLow }, // low left
+  { x: 240, y: 240, w: 100, h: 12, color: COLORS.platformMid }, // mid (boots here)
+  { x: 430, y: 95, w: 110, h: 12, color: COLORS.platformHigh }, // high (needs double jump, wand here)
+  { x: 590, y: 280, w: 110, h: 12, color: COLORS.platformTarget }, // target platform
+];
+
+// ─── Pickups ─────────────────────────────────────────────────
+const pickups = [
+  {
+    id: 'boots',
+    x: 272, y: 196,
+    w: 22, h: 22,
+    color: COLORS.boots,
+    glowColor: '#00ffcc',
+    label: 'BOOTS',
+    sublabel: 'Double Jump',
+    collected: false,
+    bobOffset: 0,
+  },
+  {
+    id: 'wand',
+    x: 460, y: 74,
+    w: 22, h: 22,
+    color: COLORS.wand,
+    glowColor: '#ffcc44',
+    label: 'WAND',
+    sublabel: 'Shoot [Z]',
+    collected: false,
+    bobOffset: Math.PI, // start halfway through the bob cycle so the two pickups bob out of sync with each other
+  },
+];
+
+// ─── Target ──────────────────────────────────────────────────
+const target = {
+  x: 614, y: 248,
+  w: 28, h: 28,
+  hp: 3, maxHp: 3,
+};
+
+// ─── Player ──────────────────────────────────────────────────
+const player = {
+  x: 30, y: 300,
+  w: 22, h: 28,
+  vx: 0, vy: 0,
+  onGround: false,
+  jumpsRemaining: 1,
+  maxJumps: 1,
+  hasDoubleJump: false,
+  hasWand: false,
+  facingRight: true,
+  bullets: [],
+};
+
+// ─── Input ───────────────────────────────────────────────────
+const heldKeys = {}; // tracks which keys are currently held down
+
+// "Consumed" flags prevent holding a key from firing repeatedly.
+// When the key is released, the flag resets and the action can fire again.
+let jumpKeyPressedConsumed = false;
+let shootKeyConsumed = false;
+
+document.addEventListener('keydown', e => {
+  heldKeys[e.key] = true;
+  // Prevent page scroll on space/arrows
+  if ([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    e.preventDefault();
+  }
+});
+document.addEventListener('keyup', e => {
+  heldKeys[e.key] = false;
+  if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+    jumpKeyPressedConsumed = false;
+  }
+  if (e.key.toLowerCase() === 'z' || e.key === 'Control') {
+    shootKeyConsumed = false;
+  }
+});
+
+// ─── Flash message ───────────────────────────────────────────
+let flashFramesRemaining = 0;
+
+/**
+ * Displays a temporary flash message on screen (e.g. "Double Jump Unlocked!").
+ * Sets the message text and color, makes it fully visible, then starts a
+ * countdown timer. After 100 frames the message begins fading out over 20
+ * frames. The fade-out logic lives in update().
+ *
+ * @param {string} text  - The message to display.
+ * @param {string} color - CSS color string for the message text.
+ */
+function showFlash(text, color) {
+  flashMessageEl.textContent = text;
+  flashMessageEl.style.color = color;
+  flashMessageEl.style.opacity = '1';
+  flashFramesRemaining = 120; // frames
+}
+
+// ─── Collision helpers ───────────────────────────────────────
+/**
+ * Returns true if two axis-aligned rectangles overlap (AABB collision detection).
+ * Each rectangle is described by its top-left corner (x, y), width (w), and
+ * height (h). The check works by testing whether the rectangles do NOT miss
+ * each other on every axis — if none of the four "gap" conditions are true,
+ * the rectangles must be overlapping.
+ *
+ * Used for player-vs-platform, player-vs-pickup, and bullet-vs-target checks.
+ *
+ * @param {number} ax - Left edge of rectangle A.
+ * @param {number} ay - Top edge of rectangle A.
+ * @param {number} aw - Width of rectangle A.
+ * @param {number} ah - Height of rectangle A.
+ * @param {number} bx - Left edge of rectangle B.
+ * @param {number} by - Top edge of rectangle B.
+ * @param {number} bw - Width of rectangle B.
+ * @param {number} bh - Height of rectangle B.
+ * @returns {boolean} True if the two rectangles overlap.
+ */
+function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
+  return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+}
+
+// ─── Update ──────────────────────────────────────────────────
+/**
+ * Runs one frame of game logic. Called once per frame before draw().
+ *
+ * Responsibilities (in order):
+ * 1. Reads held keys to set horizontal velocity and facing direction.
+ * 2. Handles jumping — checks the consumed flag so holding the key
+ *    doesn't repeat, decrements jumpsRemaining on each jump.
+ * 3. Applies gravity and caps falling speed at TERMINAL_VELOCITY.
+ * 4. Moves the player on X then Y, clamping X to the canvas bounds.
+ * 5. Resolves platform collisions (land-on-top only) — resets jumpsRemaining
+ *    when the player lands.
+ * 6. Respawns the player if they fall off the bottom of the screen.
+ * 7. Checks pickup collisions — collecting boots grants double jump,
+ *    collecting the wand enables shooting.
+ * 8. Fires bullets when the shoot key is pressed (if the wand is owned).
+ * 9. Moves active bullets and tests them against the target for hits.
+ * 10. Ticks down the flash-message timer and triggers its fade-out.
+ * 11. Advances the bob offset on uncollected pickups so they animate.
+ */
+function update() {
+
+  // Player movement
+  player.vx = 0;
+  if (heldKeys['ArrowLeft'] || heldKeys['a'] || heldKeys['A']) {
+    player.vx = -SPEED;
+    player.facingRight = false;
+  }
+  if (heldKeys['ArrowRight'] || heldKeys['d'] || heldKeys['D']) {
+    player.vx = SPEED;
+    player.facingRight = true;
+  }
+
+  // Jump
+  const jumpKeyPressed = heldKeys[' '] || heldKeys['ArrowUp'] || heldKeys['w'] || heldKeys['W'];
+  if (jumpKeyPressed && !jumpKeyPressedConsumed && player.jumpsRemaining > 0) {
+    jumpKeyPressedConsumed = true;
+    player.vy = JUMP_FORCE;
+    player.jumpsRemaining--;
+  }
+
+  // Gravity
+  player.vy += GRAVITY;
+  if (player.vy > TERMINAL_VELOCITY) player.vy = TERMINAL_VELOCITY; // cap falling speed
+
+  // Move X
+  player.x += player.vx;
+  player.x = Math.max(0, Math.min(CANVAS_WIDTH - player.w, player.x));
+
+  // Move Y
+  player.y += player.vy;
+
+  // Platform collisions (land-on-top only)
+  player.onGround = false;
+  for (const platform of platforms) {
+    // Check where the player's feet were *last frame* to avoid clipping through thin platforms.
+    // The +2 is a small tolerance for fast movement.
+    const wasAbove = (player.y + player.h - player.vy) <= platform.y + 2;
+    if (
+      player.vy >= 0 &&
+      wasAbove &&
+      player.x + player.w > platform.x &&
+      player.x < platform.x + platform.w &&
+      player.y + player.h >= platform.y &&
+      player.y + player.h <= platform.y + platform.h + 2
+    ) {
+      player.y = platform.y - player.h;
+      player.vy = 0;
+      player.onGround = true;
+      player.jumpsRemaining = player.maxJumps;
+    }
+  }
+
+  // Fall off bottom — respawn
+  if (player.y > CANVAS_HEIGHT + 50) {
+    player.x = 30;
+    player.y = 300;
+    player.vx = 0;
+    player.vy = 0;
+  }
+
+  // Pickup collisions
+  for (const pickup of pickups) {
+    if (!pickup.collected && rectsOverlap(player.x, player.y, player.w, player.h, pickup.x, pickup.y - pickup.h * 0.5, pickup.w, pickup.h)) {
+      pickup.collected = true;
+      if (pickup.id === 'boots') {
+        player.maxJumps = 2;
+        player.hasDoubleJump = true;
+        showFlash('Double Jump Unlocked!', COLORS.boots);
+      }
+      if (pickup.id === 'wand') {
+        player.hasWand = true;
+        showFlash('Shoot Unlocked! [Z]', COLORS.wand);
+      }
+    }
+  }
+
+  // Shoot
+  if (heldKeys['z'] || heldKeys['Z'] || heldKeys['Control']) {
+    if (!shootKeyConsumed && player.hasWand) {
+      shootKeyConsumed = true;
+      player.bullets.push({
+        x: player.x + (player.facingRight ? player.w + 2 : -8), // spawn just outside the player
+        y: player.y + player.h * 0.4,                           // roughly at arm height
+        vx: player.facingRight ? BULLET_SPEED : -BULLET_SPEED,  // direction matches facing
+        active: true,
+      });
+    }
+  }
+
+  // Update bullets
+  for (const bullet of player.bullets) {
+    if (!bullet.active) continue;
+    bullet.x += bullet.vx;
+    if (bullet.x < -20 || bullet.x > CANVAS_WIDTH + 20) { bullet.active = false; continue; }
+
+    // Hit target
+    if (target.hp > 0 && rectsOverlap(bullet.x - 4, bullet.y - 3, 8, 6, target.x, target.y, target.w, target.h)) {
+      bullet.active = false;
+      target.hp--;
+      if (target.hp === 0) {
+        showFlash('Target Defeated!', '#ff8844');
+      }
+    }
+  }
+  player.bullets = player.bullets.filter(bullet => bullet.active);
+
+  // Flash message decay
+  if (flashFramesRemaining > 0) {
+    flashFramesRemaining--;
+    if (flashFramesRemaining === 20) {
+      flashMessageEl.style.transition = 'opacity 0.4s';
+      flashMessageEl.style.opacity = '0';
+    }
+  }
+
+  // Bob pickups
+  for (const pickup of pickups) {
+    pickup.bobOffset += 0.05;
+  }
+}
+
+// ─── Draw ────────────────────────────────────────────────────
+
+/**
+ * Draws a filled, rounded rectangle on the canvas.
+ * Used by the HUD panel to create a soft-cornered background box.
+ *
+ * @param {number} x    - Left edge of the rectangle.
+ * @param {number} y    - Top edge of the rectangle.
+ * @param {number} w    - Width of the rectangle.
+ * @param {number} h    - Height of the rectangle.
+ * @param {number} r    - Corner radius in pixels.
+ * @param {string} fill - CSS color string used to fill the rectangle.
+ */
+function drawRoundRect(x, y, w, h, r, fill) {
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+/**
+ * Renders one frame of the game world. Called once per frame after update().
+ *
+ * Draws every visual element in back-to-front (painter's algorithm) order:
+ * 1. Dark background fill and subtle grid lines.
+ * 2. Platforms with a thin top-edge highlight.
+ * 3. Sign text hints placed in the world.
+ * 4. Uncollected pickups with a glow effect and bobbing animation.
+ * 5. The target enemy (with an HP bar when alive, "DEFEATED" text when dead).
+ * 6. Player bullets with a yellow glow.
+ * 7. The player character — body, eye, and optional boot/wand indicators.
+ * 8. The HUD overlay (via drawHUD()).
+ * 9. A small "explore -->" nudge arrow until all pickups are collected.
+ */
+function draw() {
+  // Background
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  // Background grid (subtle)
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for (let gx = 0; gx < CANVAS_WIDTH; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, CANVAS_HEIGHT); ctx.stroke(); }
+  for (let gy = 0; gy < CANVAS_HEIGHT; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(CANVAS_WIDTH, gy); ctx.stroke(); }
+
+  // Platforms
+  for (const platform of platforms) {
+    ctx.fillStyle = platform.color;
+    ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
+    // Top highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(platform.x, platform.y, platform.w, 2);
+  }
+
+  // Pickups (bobbing)
+  for (const pickup of pickups) {
+    if (pickup.collected) continue;
+    const bobAmount = Math.sin(pickup.bobOffset) * 4;
+    const bobbingY = pickup.y + bobAmount;
+
+    // Glow
+    ctx.shadowColor = pickup.glowColor;
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = pickup.color;
+    ctx.fillRect(pickup.x, bobbingY - pickup.h * 0.5, pickup.w, pickup.h);
+    ctx.shadowBlur = 0;
+
+    // Label
+    ctx.fillStyle = pickup.color;
+    ctx.font = 'bold 9px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText(pickup.label, pickup.x + pickup.w / 2, bobbingY - pickup.h * 0.5 - 12);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.font = '8px Courier New';
+    ctx.fillText(pickup.sublabel, pickup.x + pickup.w / 2, bobbingY - pickup.h * 0.5 - 3);
+  }
+
+  // Target — bare { } block keeps local variables like isAlive scoped here only
+  {
+    const isAlive = target.hp > 0;
+    ctx.fillStyle = isAlive ? COLORS.target : COLORS.targetDead;
+    ctx.fillRect(target.x, target.y, target.w, target.h);
+
+    if (isAlive) {
+      // X face
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(target.x + 6, target.y + 6); ctx.lineTo(target.x + target.w - 6, target.y + target.h - 6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(target.x + target.w - 6, target.y + 6); ctx.lineTo(target.x + 6, target.y + target.h - 6); ctx.stroke();
+
+      // HP bar
+      ctx.fillStyle = '#333';
+      ctx.fillRect(target.x, target.y - 8, target.w, 5);
+      ctx.fillStyle = '#ff4444';
+      ctx.fillRect(target.x, target.y - 8, target.w * target.hp / target.maxHp, 5);
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(target.x, target.y - 8, target.w, 5);
+    } else {
+      ctx.fillStyle = '#888';
+      ctx.font = 'bold 9px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText('DEFEATED', target.x + target.w / 2, target.y + target.h + 12);
+    }
+
+    // Label above
+    if (isAlive) {
+      ctx.fillStyle = '#ff7777';
+      ctx.font = 'bold 9px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText('TARGET', target.x + target.w / 2, target.y - 12);
+    }
+  }
+
+  // Bullets
+  ctx.shadowColor = '#ffff88';
+  ctx.shadowBlur = 6;
+  ctx.fillStyle = COLORS.bullet;
+  for (const bullet of player.bullets) {
+    ctx.fillRect(bullet.x - 5, bullet.y - 2, 10, 4);
+  }
+  ctx.shadowBlur = 0;
+
+  // Player — bare { } block keeps local variables like eyeX and wristX scoped here only
+  {
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(player.x + 2, player.y + player.h - 2, player.w - 4, 4);
+
+    // Body
+    ctx.fillStyle = COLORS.player;
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+
+    // Shine
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fillRect(player.x + 2, player.y + 2, player.w * 0.4, player.h * 0.45);
+
+    // Eye
+    const eyeX = player.facingRight ? player.x + player.w - 8 : player.x + 4;
+    ctx.fillStyle = COLORS.playerEye;
+    ctx.fillRect(eyeX, player.y + 7, 5, 5);
+    ctx.fillStyle = '#001133';
+    ctx.fillRect(eyeX + (player.facingRight ? 2 : 0), player.y + 8, 3, 3);
+
+    // Boots indicator (green feet when has double jump)
+    if (player.hasDoubleJump) {
+      ctx.fillStyle = COLORS.boots;
+      ctx.fillRect(player.x + 2, player.y + player.h - 5, player.w - 4, 5);
+    }
+
+    // Wand indicator (orange on arm when has wand)
+    if (player.hasWand) {
+      const wristX = player.facingRight ? player.x + player.w - 3 : player.x - 3;
+      ctx.fillStyle = COLORS.wand;
+      ctx.fillRect(wristX, player.y + 12, 6, 4);
+    }
+  }
+
+  // HUD
+  drawHUD();
+
+  // Nudge arrow — disappears once all pickups are collected
+  const allPickupsCollected = pickups.every(pickup => pickup.collected);
+  if (!allPickupsCollected) {
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = '11px Courier New';
+    ctx.textAlign = 'right';
+    ctx.fillText('explore -->', CANVAS_WIDTH - 8, CANVAS_HEIGHT - 8);
+  }
+}
+
+/**
+ * Renders the HUD (Heads-Up Display) showing player abilities and status.
+ * Displays a rounded rectangle panel in the top-left corner containing:
+ * - Jump ability status (always unlocked)
+ * - Double Jump ability status (locked/unlocked based on player.hasDoubleJump)
+ * - Shoot ability status (locked/unlocked based on player.hasWand)
+ * - Remaining jumps counter showing current jumps left vs maximum jumps
+ * 
+ * The HUD uses color coding to indicate ability status:
+ * - Unlocked abilities display in their respective colors (boots, wand)
+ * - Locked abilities display in the locked color
+ * - Jump counter displays in neutral color
+ */
+function drawHUD() {
+  const hudX = 8, hudY = 8;
+  const hudWidth = 195, hudHeight = 84;
+
+  drawRoundRect(hudX, hudY, hudWidth, hudHeight, 4, COLORS.hud);
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(hudX, hudY, hudWidth, hudHeight);
+
+  ctx.font = 'bold 11px Courier New';
+  ctx.textAlign = 'left';
+
+  // Jump
+  ctx.fillStyle = COLORS.unlocked;
+  ctx.fillText('Jump:         UNLOCKED', hudX + 10, hudY + 20);
+
+  // Double jump
+  if (player.hasDoubleJump) {
+    ctx.fillStyle = COLORS.boots;
+    ctx.fillText('Double Jump:  UNLOCKED', hudX + 10, hudY + 38);
+  } else {
+    ctx.fillStyle = COLORS.locked;
+    ctx.fillText('Double Jump:  LOCKED', hudX + 10, hudY + 38);
+  }
+
+  // Wand / shoot
+  if (player.hasWand) {
+    ctx.fillStyle = COLORS.wand;
+    ctx.fillText('Shoot:        UNLOCKED', hudX + 10, hudY + 56);
+  } else {
+    ctx.fillStyle = COLORS.locked;
+    ctx.fillText('Shoot:        LOCKED', hudX + 10, hudY + 56);
+  }
+
+  // Jumps remaining counter
+  ctx.fillStyle = COLORS.neutral;
+  ctx.font = '9px Courier New';
+  ctx.fillText(`Jumps left: ${player.jumpsRemaining} / ${player.maxJumps}`, hudX + 10, hudY + 73);
+}
+
+// ─── Game loop ───────────────────────────────────────────────
+/**
+ * The main game loop. Calls update() to advance game state, then draw()
+ * to render the current frame. Schedules the next frame with
+ * requestAnimationFrame, which typically runs at about 60 frames per second (fps) and
+ * automatically pauses when the browser tab is not visible.
+ */
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();

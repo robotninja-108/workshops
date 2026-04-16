@@ -2,6 +2,7 @@
 layout: default
 title: Interactive HTML + JavaScript
 workshop: Interactive HTML + JavaScript
+comments: true
 ---
 
 # Interactive HTML + JavaScript - 2 Hour Workshop
@@ -9,7 +10,7 @@ workshop: Interactive HTML + JavaScript
 **Audience:** Beginners with basic HTML familiarity \
 **Theme:** _"Making the browser respond to you with forms and JavaScript"_
 
-* [Recording](https://youtu.be/1DFExD01zDY)
+* <a href="https://youtu.be/1DFExD01zDY"><img src="{{ site.baseurl }}/assets/icons/youtube.svg" alt="" style="height:1em;vertical-align:middle;margin-right:4px">Recording</a>
 * [Slides]({{ site.baseurl }}/interactive-html-javascript/slides.html)
 * Resources:
   * [Glossary]({{ site.baseurl }}/interactive-html-javascript/resources/glossary)

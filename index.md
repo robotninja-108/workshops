@@ -5,7 +5,7 @@ title: Home
 
 # Lansing Tech Studio Workshops
 
-Welcome to the Youth Tech Workshops series! These workshops are designed for students ages **12–14** with minimal prior programming experience.
+Welcome to the Youth Tech Workshops series! These workshops are designed for students ages **12-14** with minimal prior programming experience.
 
 ## Available Workshops
 
@@ -13,7 +13,7 @@ Welcome to the Youth Tech Workshops series! These workshops are designed for stu
 
 **Date:** January 15, 2026  
 **Duration:** 2 hours  
-**Theme:** *"How computers actually work, and how you control them"*
+**Theme:** _"How computers actually work, and how you control them"_
 
 Learn the basics of how computers work, understand hardware vs software, explore files and folders, and get your first taste of the command line.
 
@@ -25,7 +25,7 @@ Learn the basics of how computers work, understand hardware vs software, explore
 
 **Date:** January 22, 2026  
 **Duration:** 2 hours  
-**Theme:** *"Making computers respond to YOU - your first real programs"*
+**Theme:** _"Making computers respond to YOU - your first real programs"_
 
 Learn JavaScript fundamentals: variables, data types, console.log, and string concatenation. Build a dynamic story using Node.js.
 
@@ -37,7 +37,7 @@ Learn JavaScript fundamentals: variables, data types, console.log, and string co
 
 **Date:** February 5, 2026  
 **Duration:** 2 hours  
-**Theme:** *"Making the browser respond to you with forms and JavaScript"*
+**Theme:** _"Making the browser respond to you with forms and JavaScript"_
 
 Build a live message box using text inputs, dropdowns, and JavaScript-driven
 updates to the page.
@@ -50,7 +50,7 @@ updates to the page.
 
 **Date:** February 19, 2026
 **Duration:** 2 hours
-**Theme:** *"Talking to your computer - your first Python conversations"*
+**Theme:** _"Talking to your computer - your first Python conversations"_
 
 Learn Python fundamentals: variables, data types, print(), input(), f-strings, and if/else decisions. Build an interactive text adventure.
 
@@ -62,7 +62,7 @@ Learn Python fundamentals: variables, data types, print(), input(), f-strings, a
 
 **Date:** February 26, 2026  
 **Duration:** 2 hours  
-**Theme:** *"Designing your own character sprites and bringing them to life in a game engine"*
+**Theme:** _"Designing your own character sprites and bringing them to life in a game engine"_
 
 Customize character sprite animations using Piskel and import them into a ready-made Godot platformer. Learn about sprite sheets, pixel art, and animation frames.
 
@@ -70,19 +70,75 @@ Customize character sprite animations using Piskel and import them into a ready-
 
 ---
 
-### Advanced Python Coding
+### [AI Playground for Kids]({{ site.baseurl }}/ai-playground-for-kids/)
 
-**Date:** April 2, 2026  
+**Date:** March 5, 2026  
 **Duration:** 2 hours  
-*Coming soon*
+**Theme:** _"Teaching computers to recognize patterns and create ideas"_
+
+Explore beginner-friendly AI with hands-on prompts, image and text generation,
+and activities that explain how models learn, where bias can show up, and how to
+use AI responsibly.
+
+[View Workshop →]({{ site.baseurl }}/ai-playground-for-kids/)
+
+---
+
+### [Sound Design and Foley]({{ site.baseurl }}/sound-design-and-foley/)
+
+**Date:** March 12, 2026
+**Duration:** 2 hours
+**Theme:** _"Building cinematic sound effects from everyday objects"_
+
+Create custom sound effects, layer ambience and action sounds, and sync audio to
+short video clips while learning the basics of recording, editing, and mixing.
+
+[View Workshop →]({{ site.baseurl }}/sound-design-and-foley/)
+
+---
+
+### [Advanced Python Coding]({{ site.baseurl }}/advanced-python/)
+
+**Date:** March 19, 2026
+**Duration:** 2 hours  
+**Theme:** _"Upgrading our program structure - from scripts to systems"_
+
+Build a multi-room text RPG while leveling up core Python skills: functions,
+classes, modules, dictionaries, file I/O, and Git workflow.
+
+[View Workshop →]({{ site.baseurl }}/advanced-python/)
+
+---
+
+### [Game Engine Tools]({{ site.baseurl }}/game-engine/)
+
+**Date:** March 26, 2026
+**Duration:** 90 minutes
+**Theme:** _"Using a real game engine to build a small 2D platformer"_
+
+Build a complete 2D platformer in Godot by working with nodes, scenes, physics, and GDScript. Animate a character, flip sprites, collect gems, and display a score.
+
+[View Workshop →]({{ site.baseurl }}/game-engine/)
+
+---
+
+### [Video Game Design - Mechanics and Logic]({{ site.baseurl }}/game-mechanics-and-logic/)
+
+**Date:** April 2, 2026
+**Duration:** 2 hours
+**Theme:** _"How games teach you to play without boring you to death"_
+
+Learn how games teach mechanics through gameplay rather than text. Analyze real game examples, identify design patterns like progressive discovery and gating, and design your own mechanic introduction sequence.
+
+[View Workshop →]({{ site.baseurl }}/game-mechanics-and-logic/)
 
 ## About the Program
 
 **Branding:** Lansing Tech Studio  
 **Theme:** Robot persona ("Lansing Techster" or just "Techster") is learning alongside students, and they help each other figure things out.  
-**Target Audience:** Ages 12–14, minimal prior programming experience  
+**Target Audience:** Ages 12-14, minimal prior programming experience  
 **Session Length:** 2 hours each  
-**Group Size:** 8–12 students per session  
+**Group Size:** 8-12 students per session  
 **Platforms:** Windows laptops (primary), Chromebooks (secondary)
 
 Workshops mix instruction and hands-on work. They slightly build on one another but are designed to be **primarily independent** so students may join at any point.

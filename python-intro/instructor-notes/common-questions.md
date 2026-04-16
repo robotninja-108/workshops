@@ -107,7 +107,7 @@ choice = input("Left or right? ").lower()
 
 ## **"Can I make the adventure loop back to the beginning?"**
 
-Yes, but we'll cover loops properly next workshop! For now, focus on building a fun story with if/else. If you're curious:
+Yes, but we'll cover loops properly in a future workshop! For now, focus on building a fun story with if/else. If you're curious:
 ```python
 while True:
     choice = input("Play again? ")
